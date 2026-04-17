@@ -7,11 +7,14 @@ interface Props {
   disabled?: boolean;
 }
 
-// Extend window type for Web Speech API
+// Web Speech API types (not in standard TS lib)
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type SpeechRecognitionCtor = new () => any;
+
 declare global {
   interface Window {
-    SpeechRecognition?: new () => SpeechRecognition;
-    webkitSpeechRecognition?: new () => SpeechRecognition;
+    SpeechRecognition?: SpeechRecognitionCtor;
+    webkitSpeechRecognition?: SpeechRecognitionCtor;
   }
 }
 
@@ -19,7 +22,8 @@ export default function VoiceButton({ onTranscript, disabled }: Props) {
   const [listening, setListening] = useState(false);
   const [supported, setSupported] = useState<boolean | null>(null);
   const [mounted, setMounted] = useState(false);
-  const recognitionRef = useRef<SpeechRecognition | null>(null);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const recognitionRef = useRef<any>(null);
 
   useEffect(() => { setMounted(true); }, []);
 
@@ -41,7 +45,8 @@ export default function VoiceButton({ onTranscript, disabled }: Props) {
     recognition.onend = () => setListening(false);
     recognition.onerror = () => setListening(false);
 
-    recognition.onresult = (event: SpeechRecognitionEvent) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    recognition.onresult = (event: any) => {
       const transcript = event.results[0][0].transcript;
       onTranscript(transcript);
     };
