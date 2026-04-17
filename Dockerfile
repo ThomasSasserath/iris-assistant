@@ -10,7 +10,7 @@ COPY . .
 # Env-Vars werden zur Laufzeit von Coolify gesetzt,
 # beim Build nur Platzhalter damit next build durchläuft
 ENV ANTHROPIC_API_KEY=placeholder
-ENV SUPABASE_URL=placeholder
+ENV SUPABASE_URL=https://placeholder.supabase.co
 ENV SUPABASE_SERVICE_ROLE_KEY=placeholder
 
 RUN npm run build
