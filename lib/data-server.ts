@@ -22,6 +22,7 @@ function mapTask(r: Record<string, unknown>): Task {
     recurrence: (r.recurrence ?? null) as Task["recurrence"],
     projectContext: r.project_context as string | undefined,
     createdAt: r.created_at as string,
+    updatedAt: r.updated_at as string,
   };
 }
 
