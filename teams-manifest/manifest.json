@@ -1,7 +1,7 @@
 {
   "$schema": "https://developer.microsoft.com/en-us/json-schemas/teams/v1.16/MicrosoftTeams.schema.json",
   "manifestVersion": "1.16",
-  "version": "1.2.0",
+  "version": "1.4.0",
   "id": "457d79a8-74ad-49c8-b451-ea16ece3a836",
   "developer": {
     "name": "sasserath + bitter",
@@ -24,10 +24,17 @@
   "accentColor": "#6366f1",
   "staticTabs": [
     {
-      "entityId": "iris-panel",
-      "name": "Iris",
-      "contentUrl": "https://iris.sasserath-bitter.com/teams-tab",
-      "websiteUrl": "https://iris.sasserath-bitter.com/teams-tab",
+      "entityId": "notizen",
+      "name": "Notizen",
+      "contentUrl": "https://iris.sasserath-bitter.com/teams-tab/notes",
+      "websiteUrl": "https://iris.sasserath-bitter.com/teams-tab/notes",
+      "scopes": ["personal"]
+    },
+    {
+      "entityId": "planner",
+      "name": "Planner",
+      "contentUrl": "https://tasks.office.com/6aba6035-1c5e-466b-8452-befc27dbef82/Home/PlanViews/MHAmqUtGjEmRqiigZiInopgAHRFM",
+      "websiteUrl": "https://tasks.office.com/6aba6035-1c5e-466b-8452-befc27dbef82/Home/PlanViews/MHAmqUtGjEmRqiigZiInopgAHRFM",
       "scopes": ["personal"]
     }
   ],
@@ -42,5 +49,8 @@
     }
   ],
   "permissions": ["identity", "messageTeamMembers"],
-  "validDomains": ["iris.sasserath-bitter.com"]
+  "validDomains": [
+    "iris.sasserath-bitter.com",
+    "tasks.office.com"
+  ]
 }
