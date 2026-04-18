@@ -2,12 +2,12 @@
 // Ruft Supabase direkt ab (kein HTTP-Umweg über API-Routen).
 
 import { supabase } from "./supabase-server";
-import type { User, Task, Note, Project, DelegatedTask } from "./types";
+import type { User, Task, Note, ProjectContext, DelegatedTask } from "./types";
 
 export interface AllDataServer {
   tasks: Task[];
   notes: Note[];
-  projects: Project[];
+  projects: ProjectContext[];
   delegatedIncoming: DelegatedTask[];
   delegatedOutgoing: DelegatedTask[];
 }
@@ -34,7 +34,7 @@ function mapNote(r: Record<string, unknown>): Note {
   };
 }
 
-function mapProject(r: Record<string, unknown>): Project {
+function mapProject(r: Record<string, unknown>): ProjectContext {
   return {
     id: r.id as string,
     name: r.name as string,
@@ -49,10 +49,11 @@ function mapDelegated(r: Record<string, unknown>): DelegatedTask {
     title: r.title as string,
     priority: r.priority as DelegatedTask["priority"],
     status: r.status as DelegatedTask["status"],
-    fromUser: r.from_user as User,
-    toUser: r.to_user as User,
+    from: r.from_user as User,
+    to: r.to_user as User,
     dueDate: r.due_date as string | null,
     createdAt: r.created_at as string,
+    updatedAt: r.updated_at as string,
   };
 }
 
