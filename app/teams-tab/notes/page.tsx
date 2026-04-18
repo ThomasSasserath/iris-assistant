@@ -7,8 +7,19 @@ const ONENOTE_URL =
 
 export default function NotesRedirect() {
   useEffect(() => {
-    window.location.href = ONENOTE_URL;
+    open();
   }, []);
+
+  async function open() {
+    try {
+      const { app } = await import("@microsoft/teams-js");
+      await app.initialize();
+      await app.openLink(ONENOTE_URL);
+    } catch {
+      // Außerhalb Teams: normaler Browser-Redirect
+      window.location.href = ONENOTE_URL;
+    }
+  }
 
   return (
     <div className="flex h-screen items-center justify-center bg-iris-bg">

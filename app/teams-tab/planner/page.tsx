@@ -7,10 +7,10 @@ const PLAN_ID = "MHAmqUtGjEmRqiigZiInopgAHRFM";
 
 export default function PlannerRedirect() {
   useEffect(() => {
-    redirect();
+    open();
   }, []);
 
-  async function redirect() {
+  async function open() {
     try {
       const { app } = await import("@microsoft/teams-js");
       await app.initialize();
@@ -19,9 +19,8 @@ export default function PlannerRedirect() {
       const url =
         `https://tasks.teams.microsoft.com/teamsui/${TENANT_ID}/Home/PlanViews/${PLAN_ID}` +
         `?userObjectId=${userObjectId}&Type=PlanLink&Channel=TeamsTab`;
-      window.location.href = url;
+      await app.openLink(url);
     } catch {
-      // Außerhalb Teams: direkt öffnen
       window.location.href =
         `https://tasks.office.com/${TENANT_ID}/Home/PlanViews/${PLAN_ID}`;
     }
