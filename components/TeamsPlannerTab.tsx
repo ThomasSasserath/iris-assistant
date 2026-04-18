@@ -92,56 +92,56 @@ export default function TeamsPlannerTab() {
     });
 
   if (loading) return (
-    <div style={{ display: "flex", height: "100vh", alignItems: "center", justifyContent: "center", background: "#0f0f10" }}>
-      <div style={{ width: 28, height: 28, borderRadius: "50%", border: "2px solid #4a9eff", borderTopColor: "transparent", animation: "spin 0.8s linear infinite" }} />
+    <div style={{ display: "flex", height: "100vh", alignItems: "center", justifyContent: "center", background: "#ffffff" }}>
+      <div style={{ width: 28, height: 28, borderRadius: "50%", border: "2px solid #6366f1", borderTopColor: "transparent", animation: "spin 0.8s linear infinite" }} />
     </div>
   );
 
   if (error) return (
-    <div style={{ display: "flex", height: "100vh", alignItems: "center", justifyContent: "center", background: "#0f0f10", color: "#6b7280", padding: 24, textAlign: "center" }}>
+    <div style={{ display: "flex", height: "100vh", alignItems: "center", justifyContent: "center", background: "#ffffff", color: "#9ca3af", padding: 24, textAlign: "center" }}>
       <p>{error}</p>
     </div>
   );
 
   return (
-    <div style={{ height: "100vh", display: "flex", flexDirection: "column", background: "#0f0f10", color: "#e8e8ea", fontFamily: "Inter, system-ui, sans-serif" }}>
+    <div style={{ height: "100vh", display: "flex", flexDirection: "column", background: "#ffffff", color: "#1a1a1a", fontFamily: "Inter, system-ui, sans-serif" }}>
       {/* Header */}
-      <div style={{ padding: "12px 16px", borderBottom: "1px solid #2a2a2e", display: "flex", alignItems: "center", gap: 8 }}>
-        <div style={{ width: 28, height: 28, borderRadius: "50%", background: "rgba(74,158,255,0.15)", color: "#4a9eff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 600 }}>I</div>
+      <div style={{ padding: "12px 16px", borderBottom: "1px solid #e5e7eb", display: "flex", alignItems: "center", gap: 8 }}>
+        <div style={{ width: 28, height: 28, borderRadius: "50%", background: "rgba(99,102,241,0.12)", color: "#6366f1", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 600 }}>I</div>
         <span style={{ fontWeight: 600, fontSize: 14 }}>Aufgaben</span>
         {openTasks.length > 0 && (
-          <span style={{ marginLeft: 4, background: "rgba(74,158,255,0.15)", color: "#4a9eff", borderRadius: 99, padding: "1px 8px", fontSize: 11, fontWeight: 600 }}>{openTasks.length}</span>
+          <span style={{ marginLeft: 4, background: "#f3f4f6", color: "#6b7280", borderRadius: 99, padding: "1px 8px", fontSize: 11, fontWeight: 600 }}>{openTasks.length}</span>
         )}
-        <button onClick={() => { setLoading(true); initTeams(); }} style={{ marginLeft: "auto", background: "none", border: "none", color: "#6b7280", cursor: "pointer", fontSize: 16 }}>↻</button>
+        <button onClick={() => { setLoading(true); initTeams(); }} style={{ marginLeft: "auto", background: "none", border: "none", color: "#9ca3af", cursor: "pointer", fontSize: 16 }}>↻</button>
       </div>
 
       {/* Tasks */}
       <div style={{ flex: 1, overflowY: "auto", padding: "12px 16px", display: "flex", flexDirection: "column", gap: 8 }}>
         {openTasks.length === 0 ? (
-          <div style={{ textAlign: "center", color: "#6b7280", paddingTop: 48, fontSize: 14 }}>
+          <div style={{ textAlign: "center", color: "#9ca3af", paddingTop: 48, fontSize: 14 }}>
             <p>Keine offenen Aufgaben.</p>
           </div>
         ) : openTasks.map(task => {
           const due = formatDue(task.dueDate);
           const isCompleting = completing === task.id;
           return (
-            <div key={task.id} style={{ background: "#1a1a1d", border: "1px solid #2a2a2e", borderRadius: 12, padding: "10px 14px", display: "flex", alignItems: "flex-start", gap: 10 }}>
+            <div key={task.id} style={{ background: "#f9fafb", border: "1px solid #e5e7eb", borderRadius: 12, padding: "10px 14px", display: "flex", alignItems: "flex-start", gap: 10 }}>
               <button
                 onClick={() => completeTask(task.id)}
                 disabled={isCompleting}
-                style={{ width: 20, height: 20, borderRadius: "50%", border: "2px solid #2a2a2e", background: "none", cursor: "pointer", flexShrink: 0, marginTop: 2, display: "flex", alignItems: "center", justifyContent: "center" }}
+                style={{ width: 20, height: 20, borderRadius: "50%", border: "2px solid #d1d5db", background: "none", cursor: "pointer", flexShrink: 0, marginTop: 2, display: "flex", alignItems: "center", justifyContent: "center" }}
               >
-                {isCompleting && <span style={{ width: 10, height: 10, borderRadius: "50%", border: "1px solid #6b7280", borderTopColor: "transparent", display: "block" }} />}
+                {isCompleting && <span style={{ width: 10, height: 10, borderRadius: "50%", border: "1px solid #9ca3af", borderTopColor: "transparent", display: "block" }} />}
               </button>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                  <span style={{ width: 6, height: 6, borderRadius: "50%", background: PRIORITY_COLOR[task.priority] ?? "#6b7280", flexShrink: 0 }} />
-                  <span style={{ fontSize: 14, color: "#e8e8ea" }}>{task.title}</span>
+                  <span style={{ width: 6, height: 6, borderRadius: "50%", background: PRIORITY_COLOR[task.priority] ?? "#9ca3af", flexShrink: 0 }} />
+                  <span style={{ fontSize: 14, color: "#1a1a1a" }}>{task.title}</span>
                 </div>
                 {(due || task.projectContext) && (
                   <div style={{ marginTop: 4, display: "flex", gap: 8, flexWrap: "wrap" }}>
                     {due && <span style={{ fontSize: 11, color: due.color, fontWeight: 500 }}>{due.text}</span>}
-                    {task.projectContext && <span style={{ fontSize: 11, color: "rgba(74,158,255,0.7)" }}>· {task.projectContext}</span>}
+                    {task.projectContext && <span style={{ fontSize: 11, color: "rgba(99,102,241,0.7)" }}>· {task.projectContext}</span>}
                   </div>
                 )}
               </div>

@@ -76,7 +76,7 @@ export default function TeamsNotesTab() {
 
   if (loading) {
     return (
-      <div className="flex h-screen items-center justify-center bg-iris-bg">
+      <div className="flex h-screen items-center justify-center bg-white">
         <div className="h-6 w-6 animate-spin rounded-full border-2 border-iris-accent border-t-transparent" />
       </div>
     );
@@ -84,20 +84,20 @@ export default function TeamsNotesTab() {
 
   if (error) {
     return (
-      <div className="flex h-screen items-center justify-center bg-iris-bg p-8 text-center">
-        <p className="whitespace-pre-line text-sm text-iris-muted">{error}</p>
+      <div className="flex h-screen items-center justify-center bg-white p-8 text-center">
+        <p className="whitespace-pre-line text-sm text-gray-500">{error}</p>
       </div>
     );
   }
 
   return (
-    <div className="flex h-screen flex-col bg-iris-bg text-iris-text">
+    <div className="flex h-screen flex-col bg-white text-gray-900">
       {/* Header */}
-      <div className="flex items-center gap-2 border-b border-iris-border px-4 py-3 shrink-0">
+      <div className="flex items-center gap-2 border-b border-gray-200 px-4 py-3 shrink-0">
         <div className="flex h-7 w-7 items-center justify-center rounded-full bg-iris-accent/15 text-iris-accent text-xs font-semibold">I</div>
         <span className="text-sm font-semibold">Notizen</span>
         {notes.length > 0 && (
-          <span className="ml-1 rounded-full bg-iris-border px-2 py-0.5 text-xs text-iris-subtext">{notes.length}</span>
+          <span className="ml-1 rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-500">{notes.length}</span>
         )}
       </div>
 
@@ -105,15 +105,15 @@ export default function TeamsNotesTab() {
       <div className="flex-1 overflow-y-auto p-4 space-y-3">
         {notes.length === 0 ? (
           <div className="py-16 text-center">
-            <p className="text-sm text-iris-muted">Noch keine Notizen.</p>
-            <p className="mt-1 text-xs text-iris-muted/60">Sag Iris im Chat „Notiz: ..."</p>
+            <p className="text-sm text-gray-400">Noch keine Notizen.</p>
+            <p className="mt-1 text-xs text-gray-300">Sag Iris im Chat „Notiz: ..."</p>
           </div>
         ) : (
           notes.map((note) => (
-            <div key={note.id} className="rounded-xl border border-iris-border bg-iris-surface px-4 py-3">
-              <p className="text-sm text-iris-text leading-relaxed whitespace-pre-wrap">{note.content}</p>
+            <div key={note.id} className="rounded-xl border border-gray-200 bg-gray-50 px-4 py-3">
+              <p className="text-sm text-gray-800 leading-relaxed whitespace-pre-wrap">{note.content}</p>
               <div className="mt-2 flex items-center gap-2">
-                <span className="text-[10px] text-iris-muted">
+                <span className="text-[10px] text-gray-400">
                   {new Date(note.createdAt).toLocaleDateString("de-DE", {
                     day: "numeric", month: "short", year: "numeric",
                     hour: "2-digit", minute: "2-digit",
