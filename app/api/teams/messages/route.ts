@@ -3,7 +3,8 @@
 // Implementierung ohne botbuilder CloudAdapter (Next.js App Router kompatibel).
 
 import { NextRequest, NextResponse } from "next/server";
-import { fetchAllData, buildContextSummary } from "@/lib/storage";
+import { fetchAllDataServer } from "@/lib/data-server";
+import { buildContextSummary } from "@/lib/storage";
 import { buildSystemPrompt } from "@/lib/iris-prompt";
 import { processIrisActions } from "@/lib/iris-actions";
 import { supabase } from "@/lib/supabase-server";
@@ -146,7 +147,7 @@ export async function POST(req: NextRequest) {
       }, { onConflict: "teams_aad_id" });
 
       // Iris-Antwort holen
-      const data = await fetchAllData(user);
+      const data = await fetchAllDataServer(user);
       const contextSummary = buildContextSummary(user, data);
       const systemPrompt = buildSystemPrompt(user, contextSummary);
 
