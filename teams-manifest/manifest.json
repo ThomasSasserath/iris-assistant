@@ -1,0 +1,46 @@
+{
+  "$schema": "https://developer.microsoft.com/en-us/json-schemas/teams/v1.16/MicrosoftTeams.schema.json",
+  "manifestVersion": "1.16",
+  "version": "1.1.0",
+  "id": "457d79a8-74ad-49c8-b451-ea16ece3a836",
+  "developer": {
+    "name": "sasserath + bitter",
+    "websiteUrl": "https://iris.sasserath-bitter.com",
+    "privacyUrl": "https://iris.sasserath-bitter.com",
+    "termsOfUseUrl": "https://iris.sasserath-bitter.com"
+  },
+  "name": {
+    "short": "Iris",
+    "full": "Iris – KI Assistentin"
+  },
+  "description": {
+    "short": "Persönliche KI Assistentin für sasserath + bitter",
+    "full": "Iris ist die persönliche KI Assistentin von sasserath + bitter. Sie verwaltet Aufgaben, Notizen und Delegationen."
+  },
+  "icons": {
+    "color": "color.png",
+    "outline": "outline.png"
+  },
+  "accentColor": "#6366f1",
+  "staticTabs": [
+    {
+      "entityId": "iris-main",
+      "name": "Iris",
+      "contentUrl": "https://iris.sasserath-bitter.com",
+      "websiteUrl": "https://iris.sasserath-bitter.com",
+      "scopes": ["personal"]
+    }
+  ],
+  "bots": [
+    {
+      "botId": "457d79a8-74ad-49c8-b451-ea16ece3a836",
+      "scopes": ["personal"],
+      "isNotificationOnly": false,
+      "supportsCalling": false,
+      "supportsVideo": false,
+      "supportsFiles": false
+    }
+  ],
+  "permissions": ["identity", "messageTeamMembers"],
+  "validDomains": ["iris.sasserath-bitter.com"]
+}
