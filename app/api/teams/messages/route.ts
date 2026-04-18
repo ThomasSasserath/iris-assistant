@@ -19,8 +19,9 @@ async function getBotToken(): Promise<string> {
   if (cachedToken && Date.now() < cachedToken.expires - 60000) {
     return cachedToken.value;
   }
+  const tenantId = process.env.MICROSOFT_TENANT_ID ?? "botframework.com";
   const res = await fetch(
-    `https://login.microsoftonline.com/botframework.com/oauth2/v2.0/token`,
+    `https://login.microsoftonline.com/${tenantId}/oauth2/v2.0/token`,
     {
       method: "POST",
       headers: { "Content-Type": "application/x-www-form-urlencoded" },
