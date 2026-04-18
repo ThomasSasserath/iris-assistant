@@ -196,8 +196,8 @@ export async function POST(req: NextRequest) {
     }
   })();
 
-  // Fire-and-forget: Nicht auf responsePromise warten
-  void responsePromise;
+  // Warten auf Verarbeitung (Teams gibt 5 Sekunden)
+  await responsePromise;
 
   return new NextResponse(null, { status: 200 });
 }
