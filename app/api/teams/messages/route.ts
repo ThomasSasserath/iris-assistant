@@ -87,15 +87,20 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Teams Bot nicht konfiguriert" }, { status: 503 });
   }
 
+  console.log("Teams POST empfangen:", req.method, req.url);
+
   let activity: Record<string, unknown>;
   try {
     activity = await req.json();
-  } catch {
+    console.log("Teams Activity type:", activity.type, "from:", JSON.stringify(activity.from));
+  } catch (e) {
+    console.error("Teams JSON parse error:", e);
     return new NextResponse(null, { status: 400 });
   }
 
   // Nur Nachrichten verarbeiten
   if (activity.type !== "message") {
+    console.log("Teams Activity ignoriert (kein message):", activity.type);
     return new NextResponse(null, { status: 200 });
   }
 
