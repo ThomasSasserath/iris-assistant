@@ -19,8 +19,9 @@ export async function POST(req: NextRequest) {
     const authHeader = req.headers.get("authorization") ?? "";
 
     // botbuilder 4.22+ unterstützt fetch Request direkt
-    const res = await adapter.process(
-      req as unknown as Request,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const res = await (adapter as any).process(
+      req,
       authHeader,
       handleTeamsTurn
     );
