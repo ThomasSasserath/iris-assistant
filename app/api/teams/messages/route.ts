@@ -48,8 +48,11 @@ async function sendTeamsReply(
   text: string
 ) {
   const token = await getBotToken();
-  const url = `${serviceUrl}v3/conversations/${conversationId}/activities/${replyToId}`;
-  await fetch(url, {
+  // serviceUrl endet manchmal ohne /
+  const base = serviceUrl.endsWith("/") ? serviceUrl : serviceUrl + "/";
+  const url = `${base}v3/conversations/${conversationId}/activities/${replyToId}`;
+  console.log("Teams: Reply URL:", url);
+  const res = await fetch(url, {
     method: "POST",
     headers: {
       Authorization: `Bearer ${token}`,
@@ -60,6 +63,8 @@ async function sendTeamsReply(
       text,
     }),
   });
+  const body = await res.text();
+  console.log("Teams: Reply Status:", res.status, body.substring(0, 200));
 }
 
 // Teams AAD Object ID → Iris User auflösen
