@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.30.0",
+    "@microsoft/teams-js": "^2.52.0",
     "@supabase/supabase-js": "^2.45.0",
     "botbuilder": "^4.23.3",
     "next": "^16.2.4",
