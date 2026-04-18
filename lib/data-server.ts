@@ -58,6 +58,60 @@ function mapDelegated(r: Record<string, unknown>): DelegatedTask {
   };
 }
 
+// Pure Funktion – kein API-Call, server-kompatibel
+export function buildContextSummaryServer(user: User, data: AllDataServer): string {
+  const { tasks, notes, projects, delegatedIncoming, delegatedOutgoing } = data;
+  const open = tasks.filter((t) => t.status === "open");
+  const today = new Date().toISOString().split("T")[0];
+  const overdue = open.filter((t) => t.dueDate && t.dueDate < today);
+
+  const lines: string[] = [];
+  lines.push(`=== AKTUELLER STATUS FÜR ${user.toUpperCase()} ===`);
+  lines.push(`Offene Aufgaben: ${open.length}, davon überfällig: ${overdue.length}`);
+
+  if (open.length > 0) {
+    lines.push("\nAufgaben (offen):");
+    open.slice(0, 20).forEach((t) => {
+      const due = t.dueDate ? ` [fällig: ${t.dueDate}]` : "";
+      const mark = t.dueDate && t.dueDate < today ? " ⚠ ÜBERFÄLLIG" : "";
+      lines.push(`  - [${t.id}] [${t.priority}] ${t.title}${due}${mark}`);
+    });
+  }
+
+  if (delegatedIncoming.length > 0) {
+    lines.push("\nDelegierte Aufgaben (an dich):");
+    delegatedIncoming.forEach((t) => {
+      const due = t.dueDate ? ` [fällig: ${t.dueDate}]` : "";
+      lines.push(`  - [${t.id}] von ${t.from}: ${t.title}${due}`);
+    });
+  }
+
+  if (delegatedOutgoing.length > 0) {
+    lines.push("\nAufgaben delegiert (von dir):");
+    delegatedOutgoing.forEach((t) => {
+      const status = t.status === "done" ? `✓ erledigt` : "offen";
+      lines.push(`  - [${t.id}] an ${t.to}: ${t.title} — ${status}`);
+    });
+  }
+
+  if (projects.length > 0) {
+    lines.push("\nProjektkontexte:");
+    projects.slice(0, 10).forEach((p) => {
+      lines.push(`  - ${p.name}: ${p.summary}`);
+    });
+  }
+
+  if (notes.length > 0) {
+    lines.push("\nLetzte Notizen:");
+    notes.slice(0, 5).forEach((n) => {
+      const preview = n.content.substring(0, 80) + (n.content.length > 80 ? "…" : "");
+      lines.push(`  - [${n.id}] ${preview}`);
+    });
+  }
+
+  return lines.join("\n");
+}
+
 export async function fetchAllDataServer(user: User): Promise<AllDataServer> {
   const [tasks, notes, projects, delegatedIn, delegatedOut] = await Promise.all([
     supabase.from("tasks").select("*").eq("user_id", user).order("created_at", { ascending: false }),

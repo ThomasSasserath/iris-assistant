@@ -3,8 +3,7 @@
 // Implementierung ohne botbuilder CloudAdapter (Next.js App Router kompatibel).
 
 import { NextRequest, NextResponse } from "next/server";
-import { fetchAllDataServer } from "@/lib/data-server";
-import { buildContextSummary } from "@/lib/storage";
+import { fetchAllDataServer, buildContextSummaryServer } from "@/lib/data-server";
 import { buildSystemPrompt } from "@/lib/iris-prompt";
 import { processIrisActions } from "@/lib/iris-actions";
 import { supabase } from "@/lib/supabase-server";
@@ -148,7 +147,7 @@ export async function POST(req: NextRequest) {
 
       // Iris-Antwort holen
       const data = await fetchAllDataServer(user);
-      const contextSummary = buildContextSummary(user, data);
+      const contextSummary = buildContextSummaryServer(user, data);
       const systemPrompt = buildSystemPrompt(user, contextSummary);
 
       const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY! });
