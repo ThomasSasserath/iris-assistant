@@ -5,7 +5,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { fetchAllDataServer, buildContextSummaryServer } from "@/lib/data-server";
 import { buildSystemPrompt } from "@/lib/iris-prompt";
-import { processIrisActions } from "@/lib/iris-actions";
+import { processIrisActionsServer } from "@/lib/iris-actions-server";
 import { supabase } from "@/lib/supabase-server";
 import Anthropic from "@anthropic-ai/sdk";
 import type { User, IrisAction } from "@/lib/types";
@@ -187,7 +187,7 @@ export async function POST(req: NextRequest) {
 
       // Aktionen ausführen
       if (iris.actions?.length > 0) {
-        await processIrisActions(user, iris.actions, data.tasks);
+        await processIrisActionsServer(user, iris.actions, data.tasks);
       }
 
       // Antwort senden
