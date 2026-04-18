@@ -1,34 +1,194 @@
 // POST /api/teams/messages
 // Empfängt Bot Framework Activities von Microsoft Teams.
+// Implementierung ohne botbuilder CloudAdapter (Next.js App Router kompatibel).
 
 import { NextRequest, NextResponse } from "next/server";
-import { getTeamsAdapter, handleTeamsTurn } from "@/lib/teams-bot";
+import { fetchAllData, buildContextSummary } from "@/lib/storage";
+import { buildSystemPrompt } from "@/lib/iris-prompt";
+import { processIrisActions } from "@/lib/iris-actions";
+import { supabase } from "@/lib/supabase-server";
+import Anthropic from "@anthropic-ai/sdk";
+import type { User, IrisAction } from "@/lib/types";
 
 export const runtime = "nodejs";
 
+// Bot Connector Token holen (für Antworten an Teams)
+let cachedToken: { value: string; expires: number } | null = null;
+
+async function getBotToken(): Promise<string> {
+  if (cachedToken && Date.now() < cachedToken.expires - 60000) {
+    return cachedToken.value;
+  }
+  const res = await fetch(
+    `https://login.microsoftonline.com/botframework.com/oauth2/v2.0/token`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({
+        grant_type: "client_credentials",
+        client_id: process.env.MICROSOFT_APP_ID!,
+        client_secret: process.env.MICROSOFT_APP_PASSWORD!,
+        scope: "https://api.botframework.com/.default",
+      }),
+    }
+  );
+  const data = await res.json();
+  cachedToken = {
+    value: data.access_token,
+    expires: Date.now() + data.expires_in * 1000,
+  };
+  return cachedToken.value;
+}
+
+// Antwort an Teams senden
+async function sendTeamsReply(
+  serviceUrl: string,
+  conversationId: string,
+  replyToId: string,
+  text: string
+) {
+  const token = await getBotToken();
+  const url = `${serviceUrl}v3/conversations/${conversationId}/activities/${replyToId}`;
+  await fetch(url, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      type: "message",
+      text,
+    }),
+  });
+}
+
+// Teams AAD Object ID → Iris User auflösen
+async function resolveUser(aadObjectId?: string, teamsUserId?: string): Promise<User | null> {
+  const key = aadObjectId ?? teamsUserId;
+  if (!key) return null;
+
+  // DB-Lookup
+  const { data } = await supabase
+    .from("teams_users")
+    .select("user_id")
+    .eq("teams_aad_id", key)
+    .single();
+  if (data?.user_id === "thomas" || data?.user_id === "beate") return data.user_id;
+
+  // Env-Var Fallback
+  if (process.env.TEAMS_AAD_ID_THOMAS && key === process.env.TEAMS_AAD_ID_THOMAS) return "thomas";
+  if (process.env.TEAMS_AAD_ID_BEATE && key === process.env.TEAMS_AAD_ID_BEATE) return "beate";
+
+  return null;
+}
+
 export async function POST(req: NextRequest) {
   if (!process.env.MICROSOFT_APP_ID || !process.env.MICROSOFT_APP_PASSWORD) {
-    return NextResponse.json(
-      { error: "Teams Bot nicht konfiguriert" },
-      { status: 503 }
-    );
+    return NextResponse.json({ error: "Teams Bot nicht konfiguriert" }, { status: 503 });
   }
 
+  let activity: Record<string, unknown>;
   try {
-    const adapter = getTeamsAdapter();
-    const authHeader = req.headers.get("authorization") ?? "";
-
-    // botbuilder 4.22+ unterstützt fetch Request direkt
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const res = await (adapter as any).process(
-      req,
-      authHeader,
-      handleTeamsTurn
-    );
-
-    return res ?? new NextResponse(null, { status: 200 });
-  } catch (err) {
-    console.error("Teams route error:", err);
-    return NextResponse.json({ error: String(err) }, { status: 500 });
+    activity = await req.json();
+  } catch {
+    return new NextResponse(null, { status: 400 });
   }
+
+  // Nur Nachrichten verarbeiten
+  if (activity.type !== "message") {
+    return new NextResponse(null, { status: 200 });
+  }
+
+  const text = (activity.text as string | undefined)?.replace(/<[^>]*>/g, "").trim();
+  if (!text) return new NextResponse(null, { status: 200 });
+
+  const from = activity.from as Record<string, string> | undefined;
+  const aadObjectId = from?.aadObjectId;
+  const teamsUserId = from?.id;
+  const serviceUrl = (activity.serviceUrl as string) ?? "";
+  const conversation = activity.conversation as Record<string, string> | undefined;
+  const conversationId = conversation?.id ?? "";
+  const activityId = activity.id as string ?? "";
+
+  // Sofort 200 zurückgeben (Teams erwartet schnelle Antwort)
+  // Verarbeitung läuft async weiter
+  const responsePromise = (async () => {
+    try {
+      const user = await resolveUser(aadObjectId, teamsUserId);
+
+      if (!user) {
+        await sendTeamsReply(serviceUrl, conversationId, activityId,
+          `Ich kenne dich noch nicht. Bitte trage deine Teams-ID in der Konfiguration ein.\n\nDeine AAD Object ID: \`${aadObjectId ?? "nicht verfügbar"}\`\nDeine Teams User ID: \`${teamsUserId}\``
+        );
+        // User in DB speichern damit Admins sehen wer sich meldet
+        await supabase.from("teams_users").upsert({
+          user_id: "thomas", // Default bis manuell zugeordnet
+          teams_aad_id: aadObjectId ?? teamsUserId ?? "unknown",
+          teams_user_id: teamsUserId,
+          service_url: serviceUrl,
+          updated_at: new Date().toISOString(),
+        }, { onConflict: "teams_aad_id" });
+        return;
+      }
+
+      // ConversationReference speichern
+      await supabase.from("teams_users").upsert({
+        user_id: user,
+        teams_aad_id: aadObjectId ?? teamsUserId!,
+        teams_user_id: teamsUserId,
+        service_url: serviceUrl,
+        updated_at: new Date().toISOString(),
+      }, { onConflict: "teams_aad_id" });
+
+      // Iris-Antwort holen
+      const data = await fetchAllData(user);
+      const contextSummary = buildContextSummary(user, data);
+      const systemPrompt = buildSystemPrompt(user, contextSummary);
+
+      const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY! });
+      const response = await client.messages.create({
+        model: "claude-sonnet-4-6",
+        max_tokens: 1024,
+        system: systemPrompt,
+        messages: [{ role: "user", content: text }],
+      });
+
+      const rawText = response.content[0].type === "text" ? response.content[0].text : "";
+
+      // JSON parsen
+      let iris = { message: rawText, actions: [] as IrisAction[] };
+      try {
+        const fenceMatch = rawText.match(/```(?:json)?\s*([\s\S]*?)```/);
+        const candidate = fenceMatch ? fenceMatch[1].trim() : rawText.trim();
+        const parsed = JSON.parse(candidate);
+        if (parsed.message !== undefined) iris = parsed;
+      } catch {
+        const braceMatch = rawText.match(/\{[\s\S]*\}/);
+        if (braceMatch) {
+          try {
+            const parsed = JSON.parse(braceMatch[0]);
+            if (parsed.message !== undefined) iris = parsed;
+          } catch {}
+        }
+      }
+
+      // Aktionen ausführen
+      if (iris.actions?.length > 0) {
+        await processIrisActions(user, iris.actions, data.tasks);
+      }
+
+      // Antwort senden
+      await sendTeamsReply(serviceUrl, conversationId, activityId, iris.message || "Erledigt.");
+    } catch (err) {
+      console.error("Teams Verarbeitungsfehler:", err);
+      try {
+        await sendTeamsReply(serviceUrl, conversationId, activityId, "Verbindungsfehler. Bitte versuche es erneut.");
+      } catch {}
+    }
+  })();
+
+  // Fire-and-forget: Nicht auf responsePromise warten
+  void responsePromise;
+
+  return new NextResponse(null, { status: 200 });
 }
