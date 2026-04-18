@@ -119,7 +119,9 @@ export async function POST(req: NextRequest) {
   // Verarbeitung läuft async weiter
   const responsePromise = (async () => {
     try {
+      console.log("Teams: Starte Verarbeitung, aadObjectId:", aadObjectId);
       const user = await resolveUser(aadObjectId, teamsUserId);
+      console.log("Teams: User aufgelöst:", user);
 
       if (!user) {
         await sendTeamsReply(serviceUrl, conversationId, activityId,
@@ -183,7 +185,9 @@ export async function POST(req: NextRequest) {
       }
 
       // Antwort senden
+      console.log("Teams: Sende Antwort:", iris.message?.substring(0, 50));
       await sendTeamsReply(serviceUrl, conversationId, activityId, iris.message || "Erledigt.");
+      console.log("Teams: Antwort gesendet.");
     } catch (err) {
       console.error("Teams Verarbeitungsfehler:", err);
       try {
