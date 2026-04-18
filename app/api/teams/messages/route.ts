@@ -158,12 +158,23 @@ export async function POST(req: NextRequest) {
       const contextSummary = buildContextSummaryServer(user, data);
       const systemPrompt = buildSystemPrompt(user, contextSummary);
 
+      // Gesprächshistorie laden (letzte 10 Nachrichten dieser Konversation)
+      const { data: historyRows } = await supabase
+        .from("teams_conversations")
+        .select("role, content")
+        .eq("conversation_id", conversationId)
+        .order("created_at", { ascending: false })
+        .limit(10);
+
+      // Älteste zuerst für Claude
+      const history = (historyRows ?? []).reverse() as { role: "user" | "assistant"; content: string }[];
+
       const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY! });
       const response = await client.messages.create({
         model: "claude-sonnet-4-6",
         max_tokens: 1024,
         system: systemPrompt,
-        messages: [{ role: "user", content: text }],
+        messages: [...history, { role: "user", content: text }],
       });
 
       const rawText = response.content[0].type === "text" ? response.content[0].text : "";
@@ -189,6 +200,12 @@ export async function POST(req: NextRequest) {
       if (iris.actions?.length > 0) {
         await processIrisActionsServer(user, iris.actions, data.tasks);
       }
+
+      // Gesprächshistorie speichern (user + assistant)
+      await supabase.from("teams_conversations").insert([
+        { conversation_id: conversationId, role: "user", content: text },
+        { conversation_id: conversationId, role: "assistant", content: iris.message || "Erledigt." },
+      ]);
 
       // Antwort senden
       console.log("Teams: Sende Antwort:", iris.message?.substring(0, 50));
