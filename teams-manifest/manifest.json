@@ -1,7 +1,7 @@
 {
   "$schema": "https://developer.microsoft.com/en-us/json-schemas/teams/v1.16/MicrosoftTeams.schema.json",
   "manifestVersion": "1.16",
-  "version": "1.8.0",
+  "version": "1.9.0",
   "id": "457d79a8-74ad-49c8-b451-ea16ece3a836",
   "developer": {
     "name": "sasserath + bitter",
@@ -33,7 +33,7 @@
     {
       "entityId": "planner",
       "name": "Planner",
-      "contentUrl": "https://tasks.teams.microsoft.com/teamsui/6aba6035-1c5e-466b-8452-befc27dbef82/Home/PlanViews/MHAmqUtGjEmRqiigZiInopgAHRFM?Type=PlanLink&Channel=TeamsTab",
+      "contentUrl": "https://iris.sasserath-bitter.com/teams-tab/planner",
       "websiteUrl": "https://tasks.office.com/6aba6035-1c5e-466b-8452-befc27dbef82/Home/PlanViews/MHAmqUtGjEmRqiigZiInopgAHRFM",
       "scopes": ["personal"]
     }
