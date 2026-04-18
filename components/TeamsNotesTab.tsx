@@ -56,7 +56,14 @@ export default function TeamsNotesTab() {
     try {
       const res = await fetch(`/api/data?user=${user}`);
       const data = await res.json();
-      const sorted = (data.notes ?? []).sort(
+      // API gibt snake_case zurück (created_at), Note-Interface erwartet createdAt
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const mapped = (data.notes ?? []).map((n: any) => ({
+        ...n,
+        createdAt: n.createdAt ?? n.created_at,
+        projectContext: n.projectContext ?? n.project_context,
+      }));
+      const sorted = mapped.sort(
         (a: Note, b: Note) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
       );
       setNotes(sorted);
